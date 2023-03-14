@@ -10,90 +10,90 @@ import (
 	"database/sql"
 )
 
-const createOrderProduct = `-- name: CreateOrderProduct :one
-INSERT INTO OrderProduct (
-  order_id,
+const createordersproduct = `-- name: Createordersproduct :one
+INSERT INTO ordersproduct (
+  orders_id,
   product_id,
   quantity
 ) VALUES (
   $1, $2, $3
 )
-RETURNING order_product_id, order_id, product_id, quantity
+RETURNING orders_product_id, orders_id, product_id, quantity
 `
 
-type CreateOrderProductParams struct {
-	OrderID   int64         `json:"order_id"`
+type CreateordersproductParams struct {
+	OrdersID  int64         `json:"orders_id"`
 	ProductID int64         `json:"product_id"`
 	Quantity  sql.NullInt64 `json:"quantity"`
 }
 
-func (q *Queries) CreateOrderProduct(ctx context.Context, arg CreateOrderProductParams) (Orderproduct, error) {
-	row := q.db.QueryRowContext(ctx, createOrderProduct, arg.OrderID, arg.ProductID, arg.Quantity)
-	var i Orderproduct
+func (q *Queries) Createordersproduct(ctx context.Context, arg CreateordersproductParams) (Ordersproduct, error) {
+	row := q.db.QueryRowContext(ctx, createordersproduct, arg.OrdersID, arg.ProductID, arg.Quantity)
+	var i Ordersproduct
 	err := row.Scan(
-		&i.OrderProductID,
-		&i.OrderID,
+		&i.OrdersProductID,
+		&i.OrdersID,
 		&i.ProductID,
 		&i.Quantity,
 	)
 	return i, err
 }
 
-const deleteOrderProduct = `-- name: DeleteOrderProduct :exec
-DELETE FROM OrderProduct
-WHERE order_product_id = $1
+const deleteordersproduct = `-- name: Deleteordersproduct :exec
+DELETE FROM ordersproduct
+WHERE orders_product_id = $1
 `
 
-func (q *Queries) DeleteOrderProduct(ctx context.Context, orderProductID int64) error {
-	_, err := q.db.ExecContext(ctx, deleteOrderProduct, orderProductID)
+func (q *Queries) Deleteordersproduct(ctx context.Context, ordersProductID int64) error {
+	_, err := q.db.ExecContext(ctx, deleteordersproduct, ordersProductID)
 	return err
 }
 
-const getOrderProduct = `-- name: GetOrderProduct :one
-SELECT order_product_id, order_id, product_id, quantity FROM OrderProduct
-WHERE order_product_id = $1 LIMIT 1
+const getordersproduct = `-- name: Getordersproduct :one
+SELECT orders_product_id, orders_id, product_id, quantity FROM ordersproduct
+WHERE orders_product_id = $1 LIMIT 1
 `
 
-func (q *Queries) GetOrderProduct(ctx context.Context, orderProductID int64) (Orderproduct, error) {
-	row := q.db.QueryRowContext(ctx, getOrderProduct, orderProductID)
-	var i Orderproduct
+func (q *Queries) Getordersproduct(ctx context.Context, ordersProductID int64) (Ordersproduct, error) {
+	row := q.db.QueryRowContext(ctx, getordersproduct, ordersProductID)
+	var i Ordersproduct
 	err := row.Scan(
-		&i.OrderProductID,
-		&i.OrderID,
+		&i.OrdersProductID,
+		&i.OrdersID,
 		&i.ProductID,
 		&i.Quantity,
 	)
 	return i, err
 }
 
-const listOrderProducts = `-- name: ListOrderProducts :many
-SELECT product_id, COUNT(product_id) ,SUM(quantity) as total FROM OrderProduct
+const listordersproducts = `-- name: Listordersproducts :many
+SELECT product_id, COUNT(product_id) ,SUM(quantity) as total FROM ordersproduct
 GROUP BY product_id
 ORDER BY total
 LIMIT $1
 OFFSET $2
 `
 
-type ListOrderProductsParams struct {
+type ListordersproductsParams struct {
 	Limit  int32 `json:"limit"`
 	Offset int32 `json:"offset"`
 }
 
-type ListOrderProductsRow struct {
+type ListordersproductsRow struct {
 	ProductID int64 `json:"product_id"`
 	Count     int64 `json:"count"`
 	Total     int64 `json:"total"`
 }
 
-func (q *Queries) ListOrderProducts(ctx context.Context, arg ListOrderProductsParams) ([]ListOrderProductsRow, error) {
-	rows, err := q.db.QueryContext(ctx, listOrderProducts, arg.Limit, arg.Offset)
+func (q *Queries) Listordersproducts(ctx context.Context, arg ListordersproductsParams) ([]ListordersproductsRow, error) {
+	rows, err := q.db.QueryContext(ctx, listordersproducts, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []ListOrderProductsRow
+	var items []ListordersproductsRow
 	for rows.Next() {
-		var i ListOrderProductsRow
+		var i ListordersproductsRow
 		if err := rows.Scan(&i.ProductID, &i.Count, &i.Total); err != nil {
 			return nil, err
 		}

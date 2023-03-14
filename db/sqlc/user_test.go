@@ -4,8 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"strings"
 	"testing"
 
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 	"github.com/zahrou/ecommerce/util"
 )
@@ -15,11 +17,29 @@ func CreateRandomUser(t *testing.T) User {
 		Username:    util.RnadomName(),
 		Email:       util.RandomEmail(),
 		Password:    util.RnadomName(),
-		PhoneNumber: util.RandomInteger(9, 100),
+		PhoneNumber: util.RandomInteger(9, 10000),
 		ZipCode:     util.RandomInteger(9, 20),
 	}
 
 	user, err := testQueries.CreateUser(context.Background(), args)
+	if err != nil {
+
+		pqErr, ok := err.(*pq.Error)
+
+		for err != nil && ok && pqErr.Code.Name() == "unique_violation" && strings.Contains(pqErr.Constraint, "users_phone_number_key") {
+			pqErr, ok = err.(*pq.Error)
+			args = CreateUserParams{
+				Username:    util.RnadomName(),
+				Email:       util.RandomEmail(),
+				Password:    util.RnadomName(),
+				PhoneNumber: util.RandomInteger(9, 10000),
+				ZipCode:     util.RandomInteger(9, 20),
+			}
+
+			user, err = testQueries.CreateUser(context.Background(), args)
+		}
+
+	}
 
 	fmt.Println(user.PhoneNumber)
 	require.NoError(t, err)
@@ -90,7 +110,7 @@ func TestGetUser(t *testing.T) {
 }
 
 func TestListUsers(t *testing.T) {
-	for i := 0; i < 7; i++ {
+	for i := 0; i < 10; i++ {
 		CreateRandomUser(t)
 	}
 

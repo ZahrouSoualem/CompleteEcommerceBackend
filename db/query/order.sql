@@ -1,20 +1,17 @@
--- name: GetOrder :one
-SELECT * FROM "order"
+-- name: GetOrders :one
+SELECT * FROM orders
 WHERE id = $1 LIMIT 1;
 
 -- name: ListOrders :many
-SELECT * FROM "order"
-WHERE user_id=$1
-ORDER BY id
-LIMIT $1
-OFFSET $2;
+SELECT * FROM orders
+WHERE user_id=$1;
 
 -- name: DeleteOrder :exec
-DELETE FROM "order"
+DELETE FROM orders
 WHERE id = $1;
 
 -- name: CreateOrder :one
-INSERT INTO "order" (
+INSERT INTO orders (
   user_id
 ) VALUES (
   $1
@@ -22,6 +19,6 @@ INSERT INTO "order" (
 RETURNING *;
 
 /*-- name: UpdateOrder :one
-UPDATE "order" SET opinion = $2
+UPDATE orders SET opinion = $2
 WHERE id = $1
 RETURNING *;*/

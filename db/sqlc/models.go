@@ -40,11 +40,11 @@ type Order struct {
 	LastUpdated time.Time `json:"last_updated"`
 }
 
-type Orderproduct struct {
-	OrderProductID int64         `json:"order_product_id"`
-	OrderID        int64         `json:"order_id"`
-	ProductID      int64         `json:"product_id"`
-	Quantity       sql.NullInt64 `json:"quantity"`
+type Ordersproduct struct {
+	OrdersProductID int64         `json:"orders_product_id"`
+	OrdersID        int64         `json:"orders_id"`
+	ProductID       int64         `json:"product_id"`
+	Quantity        sql.NullInt64 `json:"quantity"`
 }
 
 type Product struct {

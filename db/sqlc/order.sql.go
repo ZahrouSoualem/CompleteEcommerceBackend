@@ -10,7 +10,7 @@ import (
 )
 
 const createOrder = `-- name: CreateOrder :one
-INSERT INTO "order" (
+INSERT INTO orders (
   user_id
 ) VALUES (
   $1
@@ -31,7 +31,7 @@ func (q *Queries) CreateOrder(ctx context.Context, userID int64) (Order, error) 
 }
 
 const deleteOrder = `-- name: DeleteOrder :exec
-DELETE FROM "order"
+DELETE FROM orders
 WHERE id = $1
 `
 
@@ -40,13 +40,13 @@ func (q *Queries) DeleteOrder(ctx context.Context, id int64) error {
 	return err
 }
 
-const getOrder = `-- name: GetOrder :one
-SELECT id, user_id, created_at, last_updated FROM "order"
+const getOrders = `-- name: GetOrders :one
+SELECT id, user_id, created_at, last_updated FROM orders
 WHERE id = $1 LIMIT 1
 `
 
-func (q *Queries) GetOrder(ctx context.Context, id int64) (Order, error) {
-	row := q.db.QueryRowContext(ctx, getOrder, id)
+func (q *Queries) GetOrders(ctx context.Context, id int64) (Order, error) {
+	row := q.db.QueryRowContext(ctx, getOrders, id)
 	var i Order
 	err := row.Scan(
 		&i.ID,
@@ -58,20 +58,12 @@ func (q *Queries) GetOrder(ctx context.Context, id int64) (Order, error) {
 }
 
 const listOrders = `-- name: ListOrders :many
-SELECT id, user_id, created_at, last_updated FROM "order"
+SELECT id, user_id, created_at, last_updated FROM orders
 WHERE user_id=$1
-ORDER BY id
-LIMIT $1
-OFFSET $2
 `
 
-type ListOrdersParams struct {
-	Limit  int32 `json:"limit"`
-	Offset int32 `json:"offset"`
-}
-
-func (q *Queries) ListOrders(ctx context.Context, arg ListOrdersParams) ([]Order, error) {
-	rows, err := q.db.QueryContext(ctx, listOrders, arg.Limit, arg.Offset)
+func (q *Queries) ListOrders(ctx context.Context, userID int64) ([]Order, error) {
+	rows, err := q.db.QueryContext(ctx, listOrders, userID)
 	if err != nil {
 		return nil, err
 	}
