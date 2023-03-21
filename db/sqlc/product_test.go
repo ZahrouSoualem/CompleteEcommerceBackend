@@ -21,7 +21,7 @@ func CreateRandomProduct(t *testing.T) Product {
 		Description: util.RandomString(68),
 		Imageurl:    util.RnadomName(),
 		Price:       float64(util.RandomInteger(50, 100)),
-		Quantity:    util.RandomInteger(50, 100),
+		Quantity:    util.RandomInteger(200, 400),
 	}
 
 	product, err := testQueries.CreateProduct(context.Background(), args)

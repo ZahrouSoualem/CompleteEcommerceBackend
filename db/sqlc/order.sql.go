@@ -59,16 +59,63 @@ func (q *Queries) GetOrders(ctx context.Context, id int64) (Order, error) {
 
 const listOrders = `-- name: ListOrders :many
 SELECT id, user_id, created_at, last_updated FROM orders
-WHERE user_id=$1
+LIMIT $1
+OFFSET $2
 `
 
-func (q *Queries) ListOrders(ctx context.Context, userID int64) ([]Order, error) {
-	rows, err := q.db.QueryContext(ctx, listOrders, userID)
+type ListOrdersParams struct {
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListOrders(ctx context.Context, arg ListOrdersParams) ([]Order, error) {
+	rows, err := q.db.QueryContext(ctx, listOrders, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Order
+	items := []Order{}
+	for rows.Next() {
+		var i Order
+		if err := rows.Scan(
+			&i.ID,
+			&i.UserID,
+			&i.CreatedAt,
+			&i.LastUpdated,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listUserOrders = `-- name: ListUserOrders :many
+SELECT id, user_id, created_at, last_updated FROM orders
+WHERE user_id=$1
+LIMIT $2
+OFFSET $3
+`
+
+type ListUserOrdersParams struct {
+	UserID int64 `json:"user_id"`
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
+}
+
+func (q *Queries) ListUserOrders(ctx context.Context, arg ListUserOrdersParams) ([]Order, error) {
+	rows, err := q.db.QueryContext(ctx, listUserOrders, arg.UserID, arg.Limit, arg.Offset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []Order{}
 	for rows.Next() {
 		var i Order
 		if err := rows.Scan(

@@ -49,7 +49,7 @@ func (q *Queries) GetCategory(ctx context.Context, id int64) (Category, error) {
 
 const listCategories = `-- name: ListCategories :many
 SELECT id, catname FROM category
-ORDER BY CatName
+ORDER BY id
 LIMIT $1
 OFFSET $2
 `
@@ -65,7 +65,7 @@ func (q *Queries) ListCategories(ctx context.Context, arg ListCategoriesParams) 
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Category
+	items := []Category{}
 	for rows.Next() {
 		var i Category
 		if err := rows.Scan(&i.ID, &i.Catname); err != nil {

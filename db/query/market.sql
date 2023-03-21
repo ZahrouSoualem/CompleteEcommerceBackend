@@ -4,7 +4,7 @@ WHERE id = $1 LIMIT 1;
 
 -- name: ListMarkets :many
 SELECT * FROM market
-ORDER BY marketname
+ORDER BY id
 LIMIT $1
 OFFSET $2;
 

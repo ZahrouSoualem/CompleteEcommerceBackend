@@ -41,10 +41,10 @@ type Order struct {
 }
 
 type Ordersproduct struct {
-	OrdersProductID int64         `json:"orders_product_id"`
-	OrdersID        int64         `json:"orders_id"`
-	ProductID       int64         `json:"product_id"`
-	Quantity        sql.NullInt64 `json:"quantity"`
+	OrdersProductID int64 `json:"orders_product_id"`
+	OrdersID        int64 `json:"orders_id"`
+	ProductID       int64 `json:"product_id"`
+	Quantity        int64 `json:"quantity"`
 }
 
 type Product struct {

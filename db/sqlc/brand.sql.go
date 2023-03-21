@@ -55,7 +55,7 @@ func (q *Queries) GetBrand(ctx context.Context, id int64) (Brand, error) {
 
 const listBrands = `-- name: ListBrands :many
 SELECT id, braname, imageurl FROM brand
-ORDER BY braname
+ORDER BY id
 LIMIT $1
 OFFSET $2
 `
@@ -71,7 +71,7 @@ func (q *Queries) ListBrands(ctx context.Context, arg ListBrandsParams) ([]Brand
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Brand
+	items := []Brand{}
 	for rows.Next() {
 		var i Brand
 		if err := rows.Scan(&i.ID, &i.Braname, &i.Imageurl); err != nil {
@@ -89,7 +89,7 @@ func (q *Queries) ListBrands(ctx context.Context, arg ListBrandsParams) ([]Brand
 }
 
 const updateBrand = `-- name: UpdateBrand :one
-UPDATE brand SET BraName = $2
+UPDATE brand SET braname = $2
 WHERE id = $1 
 RETURNING id, braname, imageurl
 `

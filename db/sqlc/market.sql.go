@@ -68,7 +68,7 @@ func (q *Queries) GetMarket(ctx context.Context, id int64) (Market, error) {
 
 const listMarkets = `-- name: ListMarkets :many
 SELECT id, marketname, email, password FROM market
-ORDER BY marketname
+ORDER BY id
 LIMIT $1
 OFFSET $2
 `
@@ -84,7 +84,7 @@ func (q *Queries) ListMarkets(ctx context.Context, arg ListMarketsParams) ([]Mar
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Market
+	items := []Market{}
 	for rows.Next() {
 		var i Market
 		if err := rows.Scan(

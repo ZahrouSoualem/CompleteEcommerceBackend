@@ -53,7 +53,7 @@ CREATE TABLE "ordersproduct" (
   "orders_product_id" bigserial PRIMARY KEY NOT NULL,
   "orders_id" bigint NOT NULL,
   "product_id" bigint NOT NULL,
-  "quantity" bigint DEFAULT 1
+  "quantity" bigint NOT NULL DEFAULT 1
 );
 
 CREATE TABLE "review" (

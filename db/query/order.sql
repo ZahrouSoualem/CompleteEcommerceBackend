@@ -4,7 +4,14 @@ WHERE id = $1 LIMIT 1;
 
 -- name: ListOrders :many
 SELECT * FROM orders
-WHERE user_id=$1;
+LIMIT $1
+OFFSET $2;
+
+-- name: ListUserOrders :many
+SELECT * FROM orders
+WHERE user_id=$1
+LIMIT $2
+OFFSET $3;
 
 -- name: DeleteOrder :exec
 DELETE FROM orders

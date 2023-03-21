@@ -77,7 +77,7 @@ func (q *Queries) ListReviews(ctx context.Context, arg ListReviewsParams) ([]Rev
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Review
+	items := []Review{}
 	for rows.Next() {
 		var i Review
 		if err := rows.Scan(

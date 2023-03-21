@@ -71,7 +71,7 @@ func (q *Queries) ListComments(ctx context.Context, arg ListCommentsParams) ([]C
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Comment
+	items := []Comment{}
 	for rows.Next() {
 		var i Comment
 		if err := rows.Scan(&i.ID, &i.ReviewID, &i.Opinion); err != nil {
