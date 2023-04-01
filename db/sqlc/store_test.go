@@ -41,9 +41,9 @@ func TestTransaction(t *testing.T) {
 				fmt.Println("tha quantity :", q)
 				fmt.Println("tha result :", products[k].Quantity-q)
 				result, err = store.TransactionTX(context.Background(), TransactionTxPrams{
-					orderID:   orders[j].ID,
-					productID: products[k].ID,
-					quantity:  q,
+					OrderID:   orders[j].ID,
+					ProductID: products[k].ID,
+					Quantity:  q,
 				})
 			}
 
@@ -117,9 +117,9 @@ func TestTransaction2(t *testing.T) {
 				fmt.Println("tha quantity :", q)
 				fmt.Println("tha result :", products[k].Quantity-q)
 				result, err = store.TransactionTX(context.Background(), TransactionTxPrams{
-					orderID:   orders[j].ID,
-					productID: products[k].ID,
-					quantity:  q,
+					OrderID:   orders[j].ID,
+					ProductID: products[k].ID,
+					Quantity:  q,
 				})
 			}
 

@@ -5,7 +5,6 @@
 package db
 
 import (
-	"database/sql"
 	"time"
 )
 
@@ -67,15 +66,15 @@ type Review struct {
 }
 
 type User struct {
-	ID          int64          `json:"id"`
-	Username    string         `json:"username"`
-	Email       string         `json:"email"`
-	Password    string         `json:"password"`
-	Address     sql.NullString `json:"address"`
-	City        sql.NullString `json:"city"`
-	State       sql.NullString `json:"state"`
-	Country     sql.NullString `json:"country"`
-	ZipCode     int64          `json:"zip_code"`
-	PhoneNumber int64          `json:"phone_number"`
-	CreatedAt   sql.NullTime   `json:"created_at"`
+	ID          int64     `json:"id"`
+	Username    string    `json:"username"`
+	Email       string    `json:"email"`
+	Password    string    `json:"password"`
+	Address     string    `json:"address"`
+	City        string    `json:"city"`
+	State       string    `json:"state"`
+	Country     string    `json:"country"`
+	ZipCode     int64     `json:"zip_code"`
+	PhoneNumber int64     `json:"phone_number"`
+	CreatedAt   time.Time `json:"created_at"`
 }

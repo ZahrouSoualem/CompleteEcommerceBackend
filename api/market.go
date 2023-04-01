@@ -119,7 +119,8 @@ func (server *Server) deletemarket(ctx *gin.Context) {
 }
 
 type updatemarketsRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
+	ID         int64  `uri:"id" binding:"required,min=1"`
+	Marketname string `uri:"marketname" binding:"required,alpha"`
 }
 
 func (server *Server) updatemarket(ctx *gin.Context) {
@@ -130,11 +131,9 @@ func (server *Server) updatemarket(ctx *gin.Context) {
 		return
 	}
 
-	c := ctx.Param("marketname")
-
 	arg := db.UpdateMarketParams{
 		ID:         req.ID,
-		Marketname: c,
+		Marketname: req.Marketname,
 	}
 
 	market, err := server.store.UpdateMarket(ctx, arg)

@@ -7,7 +7,6 @@ package db
 
 import (
 	"context"
-	"database/sql"
 	"time"
 )
 
@@ -69,36 +68,24 @@ func (q *Queries) Getordersproduct(ctx context.Context, ordersProductID int64) (
 
 const listJoinOrderProducts = `-- name: ListJoinOrderProducts :many
 SELECT
-  ordersproduct.orders_product_id, ordersproduct.orders_id, ordersproduct.product_id, ordersproduct.quantity,orders.id, orders.user_id, orders.created_at, orders.last_updated,users.id, users.username, users.email, users.password, users.address, users.city, users.state, users.country, users.zip_code, users.phone_number, users.created_at
+    orders.id as orderid,
+    users.id as userid,
+    users.username,
+    users.email,
+    users.phone_number,
+    orders.created_at
 FROM
-    ordersproduct
-    JOIN products ON ordersproduct.product_id = products.id
-    JOIN orders ON ordersproduct.orders_id = orders.id
+     orders 
     JOIN users ON orders.user_id = users.id
-    where orders.user_id= 1
-    order by orders.created_at
 `
 
 type ListJoinOrderProductsRow struct {
-	OrdersProductID int64          `json:"orders_product_id"`
-	OrdersID        int64          `json:"orders_id"`
-	ProductID       int64          `json:"product_id"`
-	Quantity        int64          `json:"quantity"`
-	ID              int64          `json:"id"`
-	UserID          int64          `json:"user_id"`
-	CreatedAt       time.Time      `json:"created_at"`
-	LastUpdated     time.Time      `json:"last_updated"`
-	ID_2            int64          `json:"id_2"`
-	Username        string         `json:"username"`
-	Email           string         `json:"email"`
-	Password        string         `json:"password"`
-	Address         sql.NullString `json:"address"`
-	City            sql.NullString `json:"city"`
-	State           sql.NullString `json:"state"`
-	Country         sql.NullString `json:"country"`
-	ZipCode         int64          `json:"zip_code"`
-	PhoneNumber     int64          `json:"phone_number"`
-	CreatedAt_2     sql.NullTime   `json:"created_at_2"`
+	Orderid     int64     `json:"orderid"`
+	Userid      int64     `json:"userid"`
+	Username    string    `json:"username"`
+	Email       string    `json:"email"`
+	PhoneNumber int64     `json:"phone_number"`
+	CreatedAt   time.Time `json:"created_at"`
 }
 
 func (q *Queries) ListJoinOrderProducts(ctx context.Context) ([]ListJoinOrderProductsRow, error) {
@@ -111,25 +98,65 @@ func (q *Queries) ListJoinOrderProducts(ctx context.Context) ([]ListJoinOrderPro
 	for rows.Next() {
 		var i ListJoinOrderProductsRow
 		if err := rows.Scan(
-			&i.OrdersProductID,
-			&i.OrdersID,
-			&i.ProductID,
-			&i.Quantity,
-			&i.ID,
-			&i.UserID,
-			&i.CreatedAt,
-			&i.LastUpdated,
-			&i.ID_2,
+			&i.Orderid,
+			&i.Userid,
 			&i.Username,
 			&i.Email,
-			&i.Password,
-			&i.Address,
-			&i.City,
-			&i.State,
-			&i.Country,
-			&i.ZipCode,
 			&i.PhoneNumber,
-			&i.CreatedAt_2,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listOrderByUserID = `-- name: ListOrderByUserID :many
+SELECT
+    orders.id as orderid,
+    users.id as userid,
+    users.username,
+    users.email,
+    users.phone_number,
+    orders.created_at
+FROM
+     orders 
+    JOIN users ON orders.user_id = users.id
+    where users.id= $1
+`
+
+type ListOrderByUserIDRow struct {
+	Orderid     int64     `json:"orderid"`
+	Userid      int64     `json:"userid"`
+	Username    string    `json:"username"`
+	Email       string    `json:"email"`
+	PhoneNumber int64     `json:"phone_number"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+func (q *Queries) ListOrderByUserID(ctx context.Context, id int64) ([]ListOrderByUserIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, listOrderByUserID, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ListOrderByUserIDRow{}
+	for rows.Next() {
+		var i ListOrderByUserIDRow
+		if err := rows.Scan(
+			&i.Orderid,
+			&i.Userid,
+			&i.Username,
+			&i.Email,
+			&i.PhoneNumber,
+			&i.CreatedAt,
 		); err != nil {
 			return nil, err
 		}
@@ -175,6 +202,60 @@ func (q *Queries) Listordersproducts(ctx context.Context, arg Listordersproducts
 	for rows.Next() {
 		var i ListordersproductsRow
 		if err := rows.Scan(&i.ProductID, &i.Count, &i.Total); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const productByOrderID = `-- name: ProductByOrderID :many
+SELECT
+    orders_product_id,
+    orders_id,
+    ordersproduct.quantity,
+    product_id,
+    products.proname,
+    products.price
+from
+    ordersproduct
+    join products on ordersproduct.product_id = products.id
+where
+    ordersproduct.orders_id = $1
+`
+
+type ProductByOrderIDRow struct {
+	OrdersProductID int64   `json:"orders_product_id"`
+	OrdersID        int64   `json:"orders_id"`
+	Quantity        int64   `json:"quantity"`
+	ProductID       int64   `json:"product_id"`
+	Proname         string  `json:"proname"`
+	Price           float64 `json:"price"`
+}
+
+func (q *Queries) ProductByOrderID(ctx context.Context, ordersID int64) ([]ProductByOrderIDRow, error) {
+	rows, err := q.db.QueryContext(ctx, productByOrderID, ordersID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []ProductByOrderIDRow{}
+	for rows.Next() {
+		var i ProductByOrderIDRow
+		if err := rows.Scan(
+			&i.OrdersProductID,
+			&i.OrdersID,
+			&i.Quantity,
+			&i.ProductID,
+			&i.Proname,
+			&i.Price,
+		); err != nil {
 			return nil, err
 		}
 		items = append(items, i)

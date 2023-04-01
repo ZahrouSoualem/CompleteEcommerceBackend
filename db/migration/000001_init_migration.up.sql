@@ -3,13 +3,13 @@ CREATE TABLE "users" (
   "username" varchar NOT NULL,
   "email" varchar UNIQUE NOT NULL,
   "password" varchar NOT NULL,
-  "address" varchar DEFAULT '',
-  "city" varchar DEFAULT '',
-  "state" varchar DEFAULT '',
-  "country" varchar DEFAULT '',
+  "address" varchar NOT NULL DEFAULT '',
+  "city" varchar NOT NULL DEFAULT '',
+  "state" varchar NOT NULL DEFAULT '',
+  "country" varchar NOT NULL DEFAULT '',
   "zip_code" bigint NOT NULL DEFAULT 0,
   "phone_number" bigint UNIQUE NOT NULL,
-  "created_at" timestamptz DEFAULT (now())
+  "created_at" timestamptz NOT NULL DEFAULT (now())
 );
 
 CREATE TABLE "market" (

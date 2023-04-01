@@ -27,14 +27,43 @@ RETURNING *;
 
 -- name: ListJoinOrderProducts :many
 SELECT
-  ordersproduct.*,orders.*,users.*
+    orders.id as orderid,
+    users.id as userid,
+    users.username,
+    users.email,
+    users.phone_number,
+    orders.created_at
 FROM
-    ordersproduct
-    JOIN products ON ordersproduct.product_id = products.id
-    JOIN orders ON ordersproduct.orders_id = orders.id
+     orders 
+    JOIN users ON orders.user_id = users.id;
+
+-- name: ListOrderByUserID :many
+SELECT
+    orders.id as orderid,
+    users.id as userid,
+    users.username,
+    users.email,
+    users.phone_number,
+    orders.created_at
+FROM
+     orders 
     JOIN users ON orders.user_id = users.id
-    where orders.user_id= 1
-    order by orders.created_at;
+    where users.id= $1;
+
+
+-- name: ProductByOrderID :many
+SELECT
+    orders_product_id,
+    orders_id,
+    ordersproduct.quantity,
+    product_id,
+    products.proname,
+    products.price
+from
+    ordersproduct
+    join products on ordersproduct.product_id = products.id
+where
+    ordersproduct.orders_id = $1;
 
 /*-- name: Updateordersproduct :one
 UPDATE ordersproduct SET opinion = $2

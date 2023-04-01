@@ -2,9 +2,13 @@
 SELECT * FROM users
 WHERE id = $1 LIMIT 1;
 
--- name: ListUsers :many
+-- name: GetUsersByID :one
 SELECT * FROM users
-ORDER BY username
+WHERE username = $1 LIMIT 1;
+
+-- name: ListUsers :many
+SELECT id, username, email, address, city, "state", country, zip_code, phone_number, created_at FROM users
+ORDER BY id
 LIMIT $1
 OFFSET $2;
 

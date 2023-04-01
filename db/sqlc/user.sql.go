@@ -7,7 +7,7 @@ package db
 
 import (
 	"context"
-	"database/sql"
+	"time"
 )
 
 const createUser = `-- name: CreateUser :one
@@ -28,15 +28,15 @@ RETURNING id, username, email, password, address, city, state, country, zip_code
 `
 
 type CreateUserParams struct {
-	Username    string         `json:"username"`
-	Email       string         `json:"email"`
-	Password    string         `json:"password"`
-	Address     sql.NullString `json:"address"`
-	City        sql.NullString `json:"city"`
-	State       sql.NullString `json:"state"`
-	Country     sql.NullString `json:"country"`
-	ZipCode     int64          `json:"zip_code"`
-	PhoneNumber int64          `json:"phone_number"`
+	Username    string `json:"username"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	Address     string `json:"address"`
+	City        string `json:"city"`
+	State       string `json:"state"`
+	Country     string `json:"country"`
+	ZipCode     int64  `json:"zip_code"`
+	PhoneNumber int64  `json:"phone_number"`
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
@@ -102,9 +102,33 @@ func (q *Queries) GetUsers(ctx context.Context, id int64) (User, error) {
 	return i, err
 }
 
-const listUsers = `-- name: ListUsers :many
+const getUsersByID = `-- name: GetUsersByID :one
 SELECT id, username, email, password, address, city, state, country, zip_code, phone_number, created_at FROM users
-ORDER BY username
+WHERE username = $1 LIMIT 1
+`
+
+func (q *Queries) GetUsersByID(ctx context.Context, username string) (User, error) {
+	row := q.db.QueryRowContext(ctx, getUsersByID, username)
+	var i User
+	err := row.Scan(
+		&i.ID,
+		&i.Username,
+		&i.Email,
+		&i.Password,
+		&i.Address,
+		&i.City,
+		&i.State,
+		&i.Country,
+		&i.ZipCode,
+		&i.PhoneNumber,
+		&i.CreatedAt,
+	)
+	return i, err
+}
+
+const listUsers = `-- name: ListUsers :many
+SELECT id, username, email, address, city, "state", country, zip_code, phone_number, created_at FROM users
+ORDER BY id
 LIMIT $1
 OFFSET $2
 `
@@ -114,20 +138,32 @@ type ListUsersParams struct {
 	Offset int32 `json:"offset"`
 }
 
-func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error) {
+type ListUsersRow struct {
+	ID          int64     `json:"id"`
+	Username    string    `json:"username"`
+	Email       string    `json:"email"`
+	Address     string    `json:"address"`
+	City        string    `json:"city"`
+	State       string    `json:"state"`
+	Country     string    `json:"country"`
+	ZipCode     int64     `json:"zip_code"`
+	PhoneNumber int64     `json:"phone_number"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+
+func (q *Queries) ListUsers(ctx context.Context, arg ListUsersParams) ([]ListUsersRow, error) {
 	rows, err := q.db.QueryContext(ctx, listUsers, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []User{}
+	items := []ListUsersRow{}
 	for rows.Next() {
-		var i User
+		var i ListUsersRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.Username,
 			&i.Email,
-			&i.Password,
 			&i.Address,
 			&i.City,
 			&i.State,

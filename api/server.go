@@ -1,18 +1,31 @@
 package api
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/lib/pq"
 	db "github.com/zahrou/ecommerce/db/sqlc"
+	"github.com/zahrou/ecommerce/token"
+	"github.com/zahrou/ecommerce/util"
 )
 
 type Server struct {
-	store  *db.Store
-	router *gin.Engine
+	config    util.Config
+	store     db.Store
+	toenMaker token.Maker
+	router    *gin.Engine
 }
 
-func NewServer(store *db.Store) *Server {
+func NewServer(config util.Config, store db.Store) (*Server, error) {
 
-	server := &Server{store: store}
+	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create token maker: %w", err)
+	}
+
+	server := &Server{store: store, toenMaker: tokenMaker}
 	router := gin.Default()
 
 	//category
@@ -43,9 +56,35 @@ func NewServer(store *db.Store) *Server {
 	router.DELETE("/product/:id", server.deleteproduct)
 	router.PUT("/product/:id/:proname", server.updateproduct)
 
+	//user
+	router.POST("/user", server.createUser)
+	router.POST("/user/login", server.loginUser)
+	router.GET("/users", server.getUsers)
+	router.GET("/user/:id", server.getUser)
+	router.DELETE("/user/:id", server.deleteUser)
+	router.PUT("/user/:id/:username", server.updateUser)
+
+	//review
+	router.POST("/review", server.createlReview)
+	router.GET("/reviews", server.getReviews)
+	router.GET("/review/:id", server.getReview)
+	//router.DELETE("/review/:id", server.deletereview)
+	router.PUT("/review/:id/:rating", server.updateReview)
+
+	//Comment
+	router.POST("/comment", server.createlComment)
+	router.GET("/comments", server.getComments)
+	router.GET("/comment/:id", server.getComment)
+	router.DELETE("/comment/:id", server.deleteComment)
+	router.PUT("/comment", server.updateComment)
+
+	router.POST("/order", server.createOrder)
+	router.GET("/orderslist", server.getDetailedOrders)
+	router.GET("/orderslist/:id", server.GetOrdersByUserID)
+
 	server.router = router
 
-	return server
+	return server, nil
 
 }
 
@@ -59,4 +98,18 @@ func (server *Server) Start(address string) error {
 
 func errorResponse(err error) gin.H {
 	return gin.H{"error": err.Error()}
+}
+
+func CheckError(err error, ctx *gin.Context) {
+	if err != nil {
+		if pqErr, ok := err.(*pq.Error); ok {
+			switch pqErr.Code.Name() {
+			case "unique_violation", "users_phone_number_key":
+				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				return
+			}
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
 }

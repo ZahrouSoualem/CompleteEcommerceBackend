@@ -114,7 +114,8 @@ func (server *Server) deleteCategory(ctx *gin.Context) {
 }
 
 type updatecategoriesRequest struct {
-	ID int64 `uri:"id" binding:"required,min=1"`
+	ID      int64  `uri:"id" binding:"required,min=1"`
+	Catname string `uri:"catname" binding:"required,alpha"`
 }
 
 func (server *Server) updateCategory(ctx *gin.Context) {
@@ -126,10 +127,9 @@ func (server *Server) updateCategory(ctx *gin.Context) {
 		return
 	}
 
-	c := ctx.Param("catname")
 	arg := db.UpdateCategoryParams{
 		ID:      req.ID,
-		Catname: c,
+		Catname: req.Catname,
 	}
 
 	category, err := server.store.UpdateCategory(ctx, arg)
