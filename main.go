@@ -21,6 +21,7 @@ func main() {
 	}
 
 	conn, err := sql.Open(config.DBDriver, config.DBSource)
+	//defer conn.Close()
 
 	if err != nil {
 		log.Fatal("We Cannot Connect to the database")
@@ -34,6 +35,7 @@ func main() {
 		log.Fatal("We Cannot Connect to the database")
 	}
 
+	// this to start the server on specific address and port number
 	err = server.Start(config.ServerAddress)
 
 	if err != nil {

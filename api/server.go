@@ -12,10 +12,12 @@ import (
 )
 
 type Server struct {
-	config    util.Config
+	config util.Config
+	// So inside the server you have to put the interface that hold the queries
 	store     db.Store
 	toenMaker token.Maker
-	router    *gin.Engine
+	// also don't forget the engine the will manage the routing
+	router *gin.Engine
 }
 
 func NewServer(config util.Config, store db.Store) (*Server, error) {
