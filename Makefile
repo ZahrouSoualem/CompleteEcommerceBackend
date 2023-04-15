@@ -1,6 +1,5 @@
 postgres:
-	docker run --name ecommerce -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:15.2
-
+	docker run --name ecommerce --network eco-net -p 5432:5432 -e POSTGRES_USER=root -e POSTGRES_PASSWORD=secret -d postgres:15.2
 createdb:
 	docker exec -it ecommerce createdb --username=root --owner=root ecommerce
 

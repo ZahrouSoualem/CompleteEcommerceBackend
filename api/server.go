@@ -58,14 +58,6 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 	router.DELETE("/product/:id", server.deleteproduct)
 	router.PUT("/product/:id/:proname", server.updateproduct)
 
-	//user
-	router.POST("/user", server.createUser)
-	router.POST("/user/login", server.loginUser)
-	router.GET("/users", server.getUsers)
-	router.GET("/user/:id", server.getUser)
-	router.DELETE("/user/:id", server.deleteUser)
-	router.PUT("/user/:id/:username", server.updateUser)
-
 	//review
 	router.POST("/review", server.createlReview)
 	router.GET("/reviews", server.getReviews)
@@ -80,9 +72,20 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 	router.DELETE("/comment/:id", server.deleteComment)
 	router.PUT("/comment", server.updateComment)
 
-	router.POST("/order", server.createOrder)
-	router.GET("/orderslist", server.getDetailedOrders)
-	router.GET("/orderslist/:id", server.GetOrdersByUserID)
+	//user
+	router.POST("/user", server.createUser)
+	router.POST("/user/login", server.loginUser)
+	router.GET("/users", server.getUsers)
+
+	authRouter := router.Group("/").Use(authMiddleWare(tokenMaker))
+
+	authRouter.GET("/user/:id", server.getUser)
+	authRouter.DELETE("/user/:id", server.deleteUser)
+	authRouter.PUT("/user/:id/:username", server.updateUser)
+
+	authRouter.POST("/order", server.createOrder)
+	authRouter.GET("/orderslist", server.getDetailedOrders)
+	authRouter.GET("/orderslist/:id", server.GetOrdersByUserID)
 
 	server.router = router
 

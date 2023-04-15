@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	db "github.com/zahrou/ecommerce/db/sqlc"
+	"github.com/zahrou/ecommerce/token"
 )
 
 type OrderRequest struct {
@@ -59,6 +60,13 @@ func (server *Server) createOrder(ctx *gin.Context) {
 	}
 
 	arg := req.UserID
+	authPayLoad := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	user, err := server.store.GetUsers(ctx, arg)
+
+	if user.Username != authPayLoad.Username {
+		ctx.JSON(http.StatusInternalServerError, arg)
+		return
+	}
 
 	fmt.Println(req.UserID)
 
@@ -184,6 +192,13 @@ func (server *Server) GetOrdersByUserID(ctx *gin.Context) {
 	}
 
 	arg := req.UserID
+	authPayLoad := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	user, err := server.store.GetUsers(ctx, arg)
+
+	if user.Username != authPayLoad.Username {
+		ctx.JSON(http.StatusInternalServerError, arg)
+		return
+	}
 
 	Orders, err := server.store.ListOrderByUserID(ctx, arg)
 
@@ -210,7 +225,7 @@ func (server *Server) GetOrdersByUserID(ctx *gin.Context) {
 			ID:          value.Orderid,
 			CreatedAt:   value.CreatedAt,
 			UserID:      value.Userid,
-			Username:    value.Username,
+			Username:    authPayLoad.Username,
 			Email:       value.Email,
 			PhoneNumber: value.PhoneNumber,
 			Products:    OrderProduct,

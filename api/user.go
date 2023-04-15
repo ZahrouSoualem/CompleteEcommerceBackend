@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 	db "github.com/zahrou/ecommerce/db/sqlc"
+	"github.com/zahrou/ecommerce/token"
 	"github.com/zahrou/ecommerce/util"
 )
 
@@ -51,8 +52,10 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
+	authPayLoad := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+
 	user := db.CreateUserParams{
-		Username:    req.Username,
+		Username:    authPayLoad.Username,
 		Email:       req.Email,
 		Password:    hashedpassword,
 		Address:     req.Address,
